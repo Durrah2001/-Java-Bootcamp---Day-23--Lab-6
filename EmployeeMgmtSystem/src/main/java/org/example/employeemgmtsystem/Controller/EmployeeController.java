@@ -91,14 +91,14 @@ public class EmployeeController {
         // //No need for @Valid and Error, because the pos variable validating
         if(!(pos.equalsIgnoreCase("supervisor") || pos.equalsIgnoreCase("coordinator"))){
 
-            return ResponseEntity.status(200).body(new ApiResponse("Only 'supervisor' or 'coordinator' are available positions."));
+            return ResponseEntity.status(400).body(new ApiResponse("Only 'supervisor' or 'coordinator' are available positions."));
         }
 
 
         ArrayList<Employee> basedPos = new ArrayList<>();
 
         for(Employee e : employees){
-            if(e.getPosition().equalsIgnoreCase(pos) || e.getPosition().equalsIgnoreCase(pos)){
+            if(e.getPosition().equalsIgnoreCase(pos)){
                 basedPos.add(e);
             }
         } //End for
@@ -109,17 +109,17 @@ public class EmployeeController {
     } //End endpoint
 
 
-    @GetMapping("/display-ByAge/{minAge}")
-    public ResponseEntity displayByAge(@PathVariable int minAge){
+    @GetMapping("/display-ByAge/{minAge}/{maxAge}")
+    public ResponseEntity displayByAge(@PathVariable int minAge, @PathVariable int maxAge ){
 
-        if(minAge < 26){
-            return ResponseEntity.status(400).body(new ApiResponse("Age must be greater than 25."));
+        if(minAge <= 25 || maxAge < minAge){
+            return ResponseEntity.status(400).body(new ApiResponse("Age must be more than 25 and less than minAge"));
         }
 
 
         ArrayList<Employee> basedOnAge = new ArrayList<>();
         for(Employee e : employees){
-            if(e.getAge() >= minAge){
+            if(e.getAge() >= minAge  && e.getAge() <= maxAge){
                 basedOnAge.add(e);
             }
 
@@ -134,12 +134,9 @@ public class EmployeeController {
     @PutMapping("/apply-leave/{ID}")
     public ResponseEntity applyForLeave(@PathVariable String ID) {
 
-
         for (Employee e : employees) {
             //Check if emp exist
-            if (!(e.getID().equals(ID))) {
-                return ResponseEntity.status(400).body(new ApiResponse("Employee with this ID not found!"));
-            }
+            if (e.getID().equals(ID)) {            
 
             if (e.isOnLeave()) {
                 return ResponseEntity.status(400).body(new ApiResponse("This employee has a leave already!"));
@@ -152,10 +149,12 @@ public class EmployeeController {
 
             e.setOnLeave(true);
             e.setAnnualLeave(e.getAnnualLeave() - 1);
+            return ResponseEntity.status(200).body(new ApiResponse("Apply for a leave done successfully for this employee!"));
+
+            }
 
         } //End for
-
-        return ResponseEntity.status(200).body(new ApiResponse("Apply for a leave done successfully for this employee!"));
+                return ResponseEntity.status(400).body(new ApiResponse("Employee with this ID not found!"));
 
     }
 
